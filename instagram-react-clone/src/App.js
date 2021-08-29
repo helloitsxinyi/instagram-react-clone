@@ -1,26 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Post from "./Post";
 import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 function App() {
-  const [posts, setPosts] = useState([
-    {
-      username: "xinz",
-      caption: "my first post!",
-      imageUrl:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg1MndL-Xp1JcnqaB0YOqTp6zDjrwYyGKsPA&usqp=CAU",
-    },
-    {
-      username: "xinz",
-      caption: "my first post!",
-      imageUrl:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg1MndL-Xp1JcnqaB0YOqTp6zDjrwYyGKsPA&usqp=CAU",
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
 
-  // runs piece of code based on specific condition
-  useEffect(() => {}, []);
+  async function getPosts(db) {
+    const postsCol = collection(db, "posts");
+    const postsSnapshot = await getDocs(postsCol);
+    // should return array, then set posts as the returned array.
+    // map method only works on arrays.
+    setPosts(postsSnapshot.docs.map((doc) => doc.data()));
+  }
+
+  useEffect(() => {
+    getPosts(db);
+    // runs piece of code based on specific condition
+    // onSnapshot(snapshot): listener.
+    // When document added/changed/modified, update and re-execute code
+    // db.collection("posts").onSnapshot((snapshot) => {
+    //   // data gives properties of document. eg caption, username
+    //   setPosts(snapshot.docs.map((doc) => doc.data()));
+    // });
+  }, []);
 
   return (
     <div className="App">

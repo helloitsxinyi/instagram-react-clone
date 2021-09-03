@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import Post from "./Post";
 import { db } from "./firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs } from "firebase/firestore";
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -12,7 +12,9 @@ function App() {
     const postsSnapshot = await getDocs(postsCol);
     // should return array, then set posts as the returned array.
     // map method only works on arrays.
-    setPosts(postsSnapshot.docs.map((doc) => doc.data()));
+    setPosts(
+      postsSnapshot.docs.map((doc) => ({ id: doc.id, post: doc.data() }))
+    );
   }
 
   useEffect(() => {
@@ -20,10 +22,6 @@ function App() {
     // runs piece of code based on specific condition
     // onSnapshot(snapshot): listener.
     // When document added/changed/modified, update and re-execute code
-    // db.collection("posts").onSnapshot((snapshot) => {
-    //   // data gives properties of document. eg caption, username
-    //   setPosts(snapshot.docs.map((doc) => doc.data()));
-    // });
   }, []);
 
   return (
@@ -39,8 +37,10 @@ function App() {
         />
       </div>
 
-      {posts.map((post) => (
+      {posts.map(({ id, post }) => (
         <Post
+          // so that react knows it is a different post (thru id) & does not re-render previous posts.
+          key={id}
           username={post.username}
           caption={post.caption}
           imageUrl={post.imageUrl}

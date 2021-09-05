@@ -6,7 +6,12 @@ import { collection, getDocs } from "firebase/firestore";
 import { Button, Input } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { makeStyles } from "@material-ui/core/styles";
-import { createUserWithEmailAndPassword } from "@firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged,
+} from "@firebase/auth";
 
 function getModalStyle() {
   const top = 50;
@@ -39,9 +44,10 @@ function App() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [user, setUser] = useState(null);
+  const auth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       if (authUser) {
         // user has logged in
         console.log(authUser);
@@ -49,18 +55,9 @@ function App() {
         // refresh and set state again, persistent.
         // state is non persistent, disappears after refresh
         setUser(authUser);
-
-        if (authUser.displayName) {
-          // don't update username.
-        } else {
-          // if new user
-          return authUser.updateProfile({
-            displayName: username,
-          });
-        }
       } else {
-        setUser(null);
         // user has logged out
+        setUser(null);
       }
     });
     return () => {
@@ -91,10 +88,13 @@ function App() {
   const signUp = (event) => {
     // prevent refresh
     event.preventDefault();
+
     // email, password from state
-    createUserWithEmailAndPassword(email, password).catch((err) =>
-      alert(err.message)
-    );
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        updateProfile(auth.currentUser, { displayName: username });
+      })
+      .catch((err) => alert(err.message));
   };
 
   // const handleLogin = () => {};
@@ -131,6 +131,7 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+
             {/* type submit so that form is submitted when you hit enter. */}
             <Button type="submit" onClick={signUp}>
               {" "}
@@ -150,8 +151,11 @@ function App() {
           className="app__headerImage"
         />
       </div>
-
-      <Button onClick={() => setOpen(true)}>Sign up</Button>
+      {user ? (
+        <Button onClick={() => auth.signOut()}>Logout</Button>
+      ) : (
+        <Button onClick={() => setOpen(true)}>Sign up</Button>
+      )}
 
       {posts.map(({ id, post }) => (
         <Post

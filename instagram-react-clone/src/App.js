@@ -7,7 +7,6 @@ import { Button, Input } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { makeStyles } from "@material-ui/core/styles";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
   onAuthStateChanged,

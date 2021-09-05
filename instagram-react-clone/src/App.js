@@ -3,10 +3,9 @@ import "./App.css";
 import Post from "./Post";
 import { db } from "./firebase";
 import { collection, doc, getDocs } from "firebase/firestore";
-import { Button } from "@material-ui/core";
+import { Button, Input } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { makeStyles } from "@material-ui/core/styles";
-import { signInWithEmailAndPassword } from "firebase/auth";
 
 function getModalStyle() {
   const top = 50;
@@ -58,16 +57,22 @@ function App() {
 
   const signUp = (event) => {};
 
+  const handleLogin = () => {};
+
   return (
     <div className="App">
       <Modal open={open} onClose={() => setOpen(false)}>
         <div style={modalStyle} className={classes.paper}>
-          <center>
-            <img
-              className="app__headerImage"
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/1200px-Instagram_logo.svg.png"
-              alt=""
-            />
+          <form className="app__signup">
+            <center>
+              <img
+                className="app__headerImage"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/1200px-Instagram_logo.svg.png"
+                height="60px"
+                width="150px"
+                alt=""
+              />
+            </center>
             <Input
               placeholder="username"
               type="text"
@@ -86,8 +91,8 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button onClick={handleLogin}> Login </Button>
-          </center>
+            <Button onClick={signUp}> Sign up! </Button>
+          </form>
         </div>
       </Modal>
 

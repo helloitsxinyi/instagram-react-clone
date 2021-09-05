@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import Post from "./Post";
-import { db } from "./firebase";
-import { collection, doc, getDocs } from "firebase/firestore";
+import { auth, db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
 import { Button, Input } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { makeStyles } from "@material-ui/core/styles";
+import { createUserWithEmailAndPassword } from "@firebase/auth";
 
 function getModalStyle() {
   const top = 50;
@@ -37,6 +38,38 @@ function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        // user has logged in
+        console.log(authUser);
+        // cookie tracking
+        // refresh and set state again, persistent.
+        // state is non persistent, disappears after refresh
+        setUser(authUser);
+
+        if (authUser.displayName) {
+          // don't update username.
+        } else {
+          // if new user
+          return authUser.updateProfile({
+            displayName: username,
+          });
+        }
+      } else {
+        setUser(null);
+        // user has logged out
+      }
+    });
+    return () => {
+      // perform some cleanup actions before re-fire useEffect
+      unsubscribe();
+    };
+
+    // user and username dependencies change here
+  }, [user, username]);
 
   async function getPosts(db) {
     const postsCol = collection(db, "posts");
@@ -55,9 +88,16 @@ function App() {
     // When document added/changed/modified, update and re-execute code
   }, []);
 
-  const signUp = (event) => {};
+  const signUp = (event) => {
+    // prevent refresh
+    event.preventDefault();
+    // email, password from state
+    createUserWithEmailAndPassword(email, password).catch((err) =>
+      alert(err.message)
+    );
+  };
 
-  const handleLogin = () => {};
+  // const handleLogin = () => {};
 
   return (
     <div className="App">
@@ -91,7 +131,11 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button onClick={signUp}> Sign up! </Button>
+            {/* type submit so that form is submitted when you hit enter. */}
+            <Button type="submit" onClick={signUp}>
+              {" "}
+              Sign up!{" "}
+            </Button>
           </form>
         </div>
       </Modal>

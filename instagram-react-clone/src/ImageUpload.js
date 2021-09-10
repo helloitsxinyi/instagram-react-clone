@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@material-ui/core";
 import { storage, db } from "./firebase";
-import { snapshotEqual } from "@firebase/firestore";
+// import firebase from "firebase";
 
-function ImageUpload() {
+function ImageUpload(username) {
   const [caption, setCaption] = useState();
   const [progress, setProgress] = useState(0);
   const [image, setImage] = useState(null);
@@ -38,7 +38,25 @@ function ImageUpload() {
       () => {
         // complete function
         // get download link
-        storage.ref("images").child(image.name).getDownloadURL();
+        storage
+          .ref("images")
+          .child(image.name)
+          .getDownloadURL()
+          .then((url) => {
+            // post image inside db
+            // add timestamps to sort by timing
+            db.collections("posts").add({
+              // leave out timestamp for the moment, find fix
+              // timestamp: firebase.firestore.FieldValue.serverTimeStamp(),
+              caption: caption,
+              imageUrl: url,
+              username: username,
+            });
+
+            setProgress(0);
+            setImage(null);
+            setCaption("");
+          });
       }
     );
   };
@@ -50,6 +68,8 @@ function ImageUpload() {
       {/* file picker */}
       {/* post button */}
 
+      {/* html progress tag */}
+      <progress value={progress} max="100" />
       <input
         type="text"
         placeholder="Enter a caption..."
